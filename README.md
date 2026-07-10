@@ -7,6 +7,7 @@
 [![Build](https://github.com/marsvogel/PromptQuittung/actions/workflows/build.yml/badge.svg)](https://github.com/marsvogel/PromptQuittung/actions/workflows/build.yml)
 [![Latest release](https://img.shields.io/github/v/release/marsvogel/PromptQuittung)](https://github.com/marsvogel/PromptQuittung/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/marsvogel/PromptQuittung)
 
 A macOS menu bar app that sends a notification whenever a new usage event appears in your [Cursor](https://cursor.com) usage overview — showing price, model, and token count, like a receipt for every AI prompt.
 

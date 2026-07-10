@@ -65,6 +65,10 @@ xcodebuild test -project PromptQuittung.xcodeproj -scheme PromptQuittung
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Security issues: see [SECURITY.md](SECURITY.md).
 
+## About the name
+
+*Quittung* is German for *receipt* — half English, half German, and entirely literal: every prompt gets its receipt, quietly handed over by the owl in your menu bar. Consider it filed.
+
 ## License
 
 [MIT](LICENSE)

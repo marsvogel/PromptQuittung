@@ -18,10 +18,10 @@ struct MenuContent: View {
     var body: some View {
         Text(monitor.statusText)
         if let last = monitor.lastPoll {
-            Text("Letzter Poll: \(last.formatted(date: .omitted, time: .standard))")
+            Text("Last poll: \(last.formatted(date: .omitted, time: .standard))")
         }
         Divider()
-        Button("Jetzt pollen") { Task { await monitor.poll() } }
-        Button("Beenden") { NSApplication.shared.terminate(nil) }
+        Button("Poll now") { Task { await monitor.poll() } }
+        Button("Quit") { NSApplication.shared.terminate(nil) }
     }
 }

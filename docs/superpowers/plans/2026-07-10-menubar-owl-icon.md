@@ -1,35 +1,35 @@
-# Eulen-Silhouette als MenuBar-Icon — Implementation Plan
+# Owl Silhouette as Menu Bar Icon — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Das MenuBar-Icon der App durch eine stilisierte Eulen-Silhouette (Template-Image, angelehnt ans App-Icon) ersetzen; bisher zeigt es das irreführende SF Symbol `bell.badge`.
+**Goal:** Replace the app's menu bar icon with a stylized owl silhouette (template image, modeled on the app icon); until now it has shown the misleading SF Symbol `bell.badge`.
 
-**Architecture:** Ein neues SVG-Image-Set `MenuBarIcon` im bestehenden Asset-Katalog `PromptQuittung/Assets.xcassets` (Template-Rendering, Vektordaten erhalten), dazu die Umstellung des `MenuBarExtra`-Initialisierers in `PromptQuittungApp.swift` von `systemImage:` auf `image:`. Das Projekt nutzt `PBXFileSystemSynchronizedRootGroup` — neue Dateien unter `PromptQuittung/` werden automatisch Teil des Targets, `project.pbxproj` bleibt unberührt.
+**Architecture:** A new SVG image set `MenuBarIcon` in the existing asset catalog `PromptQuittung/Assets.xcassets` (template rendering, vector data preserved), plus switching the `MenuBarExtra` initializer in `PromptQuittungApp.swift` from `systemImage:` to `image:`. The project uses `PBXFileSystemSynchronizedRootGroup` — new files under `PromptQuittung/` automatically become part of the target; `project.pbxproj` remains untouched.
 
-**Tech Stack:** SwiftUI `MenuBarExtra` (macOS 13+), Xcode-Asset-Katalog mit SVG (Xcode ≥ 12), xcodebuild, SwiftLint.
+**Tech Stack:** SwiftUI `MenuBarExtra` (macOS 13+), Xcode asset catalog with SVG (Xcode ≥ 12), xcodebuild, SwiftLint.
 
 ## Global Constraints
 
-- Spec: `docs/superpowers/specs/2026-07-10-menubar-owl-icon-design.md` — Geometrie der Eule exakt von dort übernehmen.
-- Öffentliches Repo unter Pseudonym: Commits ausschließlich mit der bereits konfigurierten Git-Identität `marsvogel`, keine Klarnamen in Dateien oder Commit-Messages.
-- SwiftLint läuft in der CI mit `--strict`; jede Swift-Änderung muss lint-frei sein.
-- Commit-Messages auf Deutsch im bestehenden Stil (`feat:`, `docs:`, …).
+- Spec: `docs/superpowers/specs/2026-07-10-menubar-owl-icon-design.md` — take the owl's geometry exactly from there.
+- Public repo under a pseudonym: commit exclusively with the already configured git identity `marsvogel`; no real names in files or commit messages.
+- SwiftLint runs in CI with `--strict`; every Swift change must be lint-free.
+- Commit messages in English, following the existing style (`feat:`, `docs:`, …).
 
 ---
 
-### Task 1: SVG-Asset `MenuBarIcon` im Asset-Katalog
+### Task 1: SVG asset `MenuBarIcon` in the asset catalog
 
 **Files:**
 - Create: `PromptQuittung/Assets.xcassets/MenuBarIcon.imageset/MenuBarIcon.svg`
 - Create: `PromptQuittung/Assets.xcassets/MenuBarIcon.imageset/Contents.json`
 
 **Interfaces:**
-- Consumes: nichts (erster Task).
-- Produces: Asset-Katalog-Eintrag mit dem Namen `MenuBarIcon`, den Task 2 per `MenuBarExtra("PromptQuittung", image: "MenuBarIcon")` referenziert.
+- Consumes: nothing (first task).
+- Produces: an asset catalog entry named `MenuBarIcon`, which Task 2 references via `MenuBarExtra("PromptQuittung", image: "MenuBarIcon")`.
 
-- [x] **Step 1: Imageset-Verzeichnis und SVG anlegen**
+- [x] **Step 1: Create the imageset directory and the SVG**
 
-Datei `PromptQuittung/Assets.xcassets/MenuBarIcon.imageset/MenuBarIcon.svg` mit exakt diesem Inhalt (Eulen-Silhouette, Variante A aus der Spec; Füllfarbe ist bei Template-Rendering egal, zählt nur Alpha):
+File `PromptQuittung/Assets.xcassets/MenuBarIcon.imageset/MenuBarIcon.svg` with exactly this content (owl silhouette, variant A from the spec; the fill color does not matter with template rendering, only alpha counts):
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">
@@ -41,9 +41,9 @@ Datei `PromptQuittung/Assets.xcassets/MenuBarIcon.imageset/MenuBarIcon.svg` mit 
 </svg>
 ```
 
-- [x] **Step 2: Contents.json anlegen**
+- [x] **Step 2: Create Contents.json**
 
-Datei `PromptQuittung/Assets.xcassets/MenuBarIcon.imageset/Contents.json` mit exakt diesem Inhalt:
+File `PromptQuittung/Assets.xcassets/MenuBarIcon.imageset/Contents.json` with exactly this content:
 
 ```json
 {
@@ -64,7 +64,7 @@ Datei `PromptQuittung/Assets.xcassets/MenuBarIcon.imageset/Contents.json` mit ex
 }
 ```
 
-- [x] **Step 3: Build ausführen — actool muss das SVG akzeptieren**
+- [x] **Step 3: Run the build — actool must accept the SVG**
 
 Run:
 ```bash
@@ -74,54 +74,54 @@ xcodebuild -project PromptQuittung.xcodeproj \
   CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO \
   build 2>&1 | tail -5
 ```
-Expected: `** BUILD SUCCEEDED **` (keine actool-Warnung zu `MenuBarIcon`).
+Expected: `** BUILD SUCCEEDED **` (no actool warning about `MenuBarIcon`).
 
-- [x] **Step 4: Asset im kompilierten Katalog nachweisen**
+- [x] **Step 4: Verify the asset in the compiled catalog**
 
 Run:
 ```bash
 assetutil --info build/Release/PromptQuittung.app/Contents/Resources/Assets.car | grep -A2 '"Name" : "MenuBarIcon"' | head -5
 ```
-Expected: mindestens ein Eintrag mit `"Name" : "MenuBarIcon"` (Vector-Rendition).
+Expected: at least one entry with `"Name" : "MenuBarIcon"` (vector rendition).
 
 - [x] **Step 5: Commit**
 
 ```bash
 git add PromptQuittung/Assets.xcassets/MenuBarIcon.imageset
-git commit -m "feat: Eulen-Silhouette als Template-Asset MenuBarIcon"
+git commit -m "feat: owl silhouette as MenuBarIcon template asset"
 ```
 
 ---
 
-### Task 2: MenuBarExtra auf das Eulen-Icon umstellen
+### Task 2: Switch MenuBarExtra to the owl icon
 
 **Files:**
 - Modify: `PromptQuittung/PromptQuittungApp.swift:8`
 
 **Interfaces:**
-- Consumes: Asset `MenuBarIcon` aus Task 1.
-- Produces: sichtbares Verhalten — Eule statt Glocke in der Menüleiste; keine API, auf der weitere Tasks aufbauen.
+- Consumes: asset `MenuBarIcon` from Task 1.
+- Produces: visible behavior — an owl instead of a bell in the menu bar; no API for further tasks to build on.
 
-- [x] **Step 1: Initialisierer umstellen**
+- [x] **Step 1: Switch the initializer**
 
-In `PromptQuittung/PromptQuittungApp.swift`, Zeile 8, alt:
+In `PromptQuittung/PromptQuittungApp.swift`, line 8, before:
 
 ```swift
         MenuBarExtra("PromptQuittung", systemImage: "bell.badge") {
 ```
 
-neu:
+after:
 
 ```swift
         MenuBarExtra("PromptQuittung", image: "MenuBarIcon") {
 ```
 
-- [x] **Step 2: SwiftLint prüfen**
+- [x] **Step 2: Check SwiftLint**
 
-Run: `swiftlint lint --strict 2>/dev/null | tail -3` (falls `swiftlint` lokal fehlt: Schritt überspringen, die CI prüft ohnehin).
-Expected: `Found 0 violations` bzw. Exit 0.
+Run: `swiftlint lint --strict 2>/dev/null | tail -3` (if `swiftlint` is missing locally: skip this step, CI checks it anyway).
+Expected: `Found 0 violations` or exit code 0.
 
-- [x] **Step 3: Build ausführen**
+- [x] **Step 3: Run the build**
 
 Run:
 ```bash
@@ -133,16 +133,16 @@ xcodebuild -project PromptQuittung.xcodeproj \
 ```
 Expected: `** BUILD SUCCEEDED **`
 
-- [x] **Step 4: App starten und Menüleiste visuell prüfen**
+- [x] **Step 4: Launch the app and visually check the menu bar**
 
 Run:
 ```bash
 open build/Release/PromptQuittung.app && sleep 3 && \
 screencapture -x -R0,0,2000,40 /tmp/menubar-owl.png
 ```
-(Bildbreite ggf. an die Bildschirmauflösung anpassen.)
+(Adjust the image width to the screen resolution if necessary.)
 
-Expected im Screenshot: Die Eulen-Silhouette erscheint rechts in der Menüleiste, monochrom in der zur aktuellen Darstellung (hell/dunkel) passenden Farbe, in ähnlicher Größe wie die Nachbar-Icons. Danach App beenden:
+Expected in the screenshot: the owl silhouette appears on the right side of the menu bar, monochrome in the color matching the current appearance (light/dark), at a size similar to the neighboring icons. Then quit the app:
 
 ```bash
 pkill -x PromptQuittung
@@ -152,5 +152,5 @@ pkill -x PromptQuittung
 
 ```bash
 git add PromptQuittung/PromptQuittungApp.swift
-git commit -m "feat: Eulen-Icon statt bell.badge in der Menüleiste"
+git commit -m "feat: owl icon instead of bell.badge in the menu bar"
 ```

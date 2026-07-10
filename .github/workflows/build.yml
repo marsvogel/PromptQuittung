@@ -20,7 +20,7 @@ jobs:
           command -v swiftlint >/dev/null || brew install swiftlint
           swiftlint lint --strict --reporter github-actions-logging
 
-      - name: Build (unsigniert)
+      - name: Build (unsigned)
         run: |
           xcodebuild -project PromptQuittung.xcodeproj \
             -target PromptQuittung \
@@ -29,16 +29,16 @@ jobs:
             CURRENT_PROJECT_VERSION=${{ github.run_number }} \
             build
 
-      - name: App als ZIP verpacken
+      - name: Package app as ZIP
         run: ditto -c -k --keepParent build/Release/PromptQuittung.app PromptQuittung.zip
 
-      - name: Artefakt hochladen
+      - name: Upload artifact
         uses: actions/upload-artifact@v5
         with:
           name: PromptQuittung
           path: PromptQuittung.zip
 
-      - name: Release erstellen (nur auf main)
+      - name: Create release (main only)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}

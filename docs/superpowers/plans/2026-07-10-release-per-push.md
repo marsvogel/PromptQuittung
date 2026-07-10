@@ -1,38 +1,38 @@
-# Release bei jedem Push auf main — Implementierungsplan
+# Release on Every Push to main — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Jeder Push auf `main` erzeugt automatisch einen GitHub-Release `v<MARKETING_VERSION>.<run_number>` mit der gebauten App als ZIP; die Run-Nummer wird als Build-Nummer (CFBundleVersion) in die App eingebaut.
+**Goal:** Every push to `main` automatically creates a GitHub release `v<MARKETING_VERSION>.<run_number>` with the built app as a ZIP; the run number is baked into the app as the build number (CFBundleVersion).
 
-**Architecture:** Einzige Änderung ist `.github/workflows/build.yml`: Tag-Trigger entfällt, `xcodebuild` bekommt `CURRENT_PROJECT_VERSION` aus der Run-Nummer, der Release-Step läuft nur noch bei Push auf `main` und liest die `MARKETING_VERSION` per `xcodebuild -showBuildSettings` aus dem Projekt.
+**Architecture:** The only change is `.github/workflows/build.yml`: the tag trigger goes away, `xcodebuild` gets `CURRENT_PROJECT_VERSION` from the run number, the release step now only runs on pushes to `main` and reads the `MARKETING_VERSION` from the project via `xcodebuild -showBuildSettings`.
 
-**Tech Stack:** GitHub Actions (macos-26 Runner), `xcodebuild`, `gh` CLI.
+**Tech Stack:** GitHub Actions (macos-26 runner), `xcodebuild`, `gh` CLI.
 
 **Spec:** `docs/superpowers/specs/2026-07-10-release-per-push-design.md`
 
 ## Global Constraints
 
-- Repo ist öffentlich unter Pseudonym `marsvogel` — keine Klarnamen/Arbeitgeber in Commits oder Dateien.
-- Step-Namen im Workflow sind deutsch (bestehender Stil).
-- Tag-/Release-Schema exakt: `v<MARKETING_VERSION>.<run_number>`, z. B. `v1.0.42`.
-- `MARKETING_VERSION` wird NICHT hardcodiert, sondern aus dem Xcode-Projekt gelesen.
-- Release-Step nur bei `github.event_name == 'push' && github.ref == 'refs/heads/main'`.
-- `gh release create` immer mit `--target "$GITHUB_SHA"` (Tag muss auf den gebauten Commit zeigen).
+- The repo is public under the pseudonym `marsvogel` — no real names/employers in commits or files.
+- Step names in the workflow are in English.
+- Tag/release scheme exactly: `v<MARKETING_VERSION>.<run_number>`, e.g. `v1.0.42`.
+- `MARKETING_VERSION` is NOT hardcoded but read from the Xcode project.
+- Release step only on `github.event_name == 'push' && github.ref == 'refs/heads/main'`.
+- `gh release create` always with `--target "$GITHUB_SHA"` (the tag must point to the built commit).
 
 ---
 
-### Task 1: Workflow umbauen
+### Task 1: Rework the workflow
 
 **Files:**
-- Modify: `.github/workflows/build.yml` (komplette Datei, siehe Step 3)
+- Modify: `.github/workflows/build.yml` (entire file, see Step 3)
 
 **Interfaces:**
-- Consumes: bestehendes Xcode-Projekt `PromptQuittung.xcodeproj` mit Target `PromptQuittung` und `MARKETING_VERSION = 1.0` in den Build-Settings.
-- Produces: Workflow, der bei Push auf `main` einen Release `v1.0.<run_number>` erstellt. Task 2 verlässt sich auf den Step-Namen `Release erstellen (nur auf main)` und das Asset `PromptQuittung.zip`.
+- Consumes: existing Xcode project `PromptQuittung.xcodeproj` with target `PromptQuittung` and `MARKETING_VERSION = 1.0` in the build settings.
+- Produces: a workflow that creates a release `v1.0.<run_number>` on every push to `main`. Task 2 relies on the step name `Create release (main only)` and the asset `PromptQuittung.zip`.
 
-- [ ] **Step 1: Extraktion der MARKETING_VERSION lokal verifizieren (Test zuerst)**
+- [ ] **Step 1: Verify the MARKETING_VERSION extraction locally (test first)**
 
-Bevor der Befehl in den Workflow wandert, lokal prüfen, dass er genau `1.0` liefert:
+Before the command goes into the workflow, verify locally that it yields exactly `1.0`:
 
 ```bash
 cd /path/to/PromptQuittung
@@ -41,9 +41,9 @@ xcodebuild -project PromptQuittung.xcodeproj \
   | awk '$1 == "MARKETING_VERSION" {print $3; exit}'
 ```
 
-Erwartet: exakt die Ausgabe `1.0` (eine Zeile, nichts weiter). Liefert der Befehl etwas anderes (leer, mehrere Zeilen), NICHT fortfahren, sondern die `awk`-Extraktion anpassen, bis die Ausgabe stimmt.
+Expected: exactly the output `1.0` (one line, nothing else). If the command yields anything else (empty, multiple lines), do NOT continue; instead adjust the `awk` extraction until the output is correct.
 
-- [ ] **Step 2: Verifizieren, dass CURRENT_PROJECT_VERSION per Kommandozeile überschreibbar ist**
+- [ ] **Step 2: Verify that CURRENT_PROJECT_VERSION can be overridden via the command line**
 
 ```bash
 xcodebuild -project PromptQuittung.xcodeproj \
@@ -52,11 +52,11 @@ xcodebuild -project PromptQuittung.xcodeproj \
   | awk '$1 == "CURRENT_PROJECT_VERSION" {print $3; exit}'
 ```
 
-Erwartet: `42`. (Damit ist belegt, dass der Override im CI-Build greift und die App als Build 42 erscheint.)
+Expected: `42`. (This proves that the override takes effect in the CI build and the app shows up as build 42.)
 
-- [ ] **Step 3: Workflow-Datei ersetzen**
+- [ ] **Step 3: Replace the workflow file**
 
-`.github/workflows/build.yml` bekommt exakt diesen Inhalt:
+`.github/workflows/build.yml` gets exactly this content:
 
 ```yaml
 name: Build
@@ -76,7 +76,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Build (unsigniert)
+      - name: Build (unsigned)
         run: |
           xcodebuild -project PromptQuittung.xcodeproj \
             -target PromptQuittung \
@@ -85,16 +85,16 @@ jobs:
             CURRENT_PROJECT_VERSION=${{ github.run_number }} \
             build
 
-      - name: App als ZIP verpacken
+      - name: Package app as ZIP
         run: ditto -c -k --keepParent build/Release/PromptQuittung.app PromptQuittung.zip
 
-      - name: Artefakt hochladen
+      - name: Upload artifact
         uses: actions/upload-artifact@v5
         with:
           name: PromptQuittung
           path: PromptQuittung.zip
 
-      - name: Release erstellen (nur auf main)
+      - name: Create release (main only)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -109,66 +109,66 @@ jobs:
             --target "$GITHUB_SHA"
 ```
 
-Änderungen gegenüber vorher: (a) `tags: ["v*"]`-Trigger entfernt, (b) `CURRENT_PROJECT_VERSION=${{ github.run_number }}` im Build, (c) Release-Bedingung von Tag auf main-Push umgestellt, (d) Tag wird aus `MARKETING_VERSION` + Run-Nummer gebaut, (e) `--target "$GITHUB_SHA"` ergänzt.
+Changes compared to before: (a) removed the `tags: ["v*"]` trigger, (b) `CURRENT_PROJECT_VERSION=${{ github.run_number }}` in the build, (c) switched the release condition from tag to main push, (d) the tag is built from `MARKETING_VERSION` + run number, (e) added `--target "$GITHUB_SHA"`.
 
-- [ ] **Step 4: YAML-Syntax prüfen**
+- [ ] **Step 4: Check the YAML syntax**
 
 ```bash
 ruby -ryaml -e 'YAML.load_file(".github/workflows/build.yml"); puts "OK"'
 ```
 
-Erwartet: `OK`. (Falls `actionlint` installiert ist, zusätzlich `actionlint .github/workflows/build.yml` laufen lassen — erwartet: keine Ausgabe, Exit-Code 0.)
+Expected: `OK`. (If `actionlint` is installed, additionally run `actionlint .github/workflows/build.yml` — expected: no output, exit code 0.)
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add .github/workflows/build.yml
-git commit -m "ci: Release bei jedem Push auf main statt nur bei Tags"
+git commit -m "ci: release on every push to main instead of only on tags"
 ```
 
 ---
 
-### Task 2: Auf main verifizieren
+### Task 2: Verify on main
 
 **Files:**
-- Keine Änderungen — reine Verifikation des deployten Workflows.
+- No changes — pure verification of the deployed workflow.
 
 **Interfaces:**
-- Consumes: den in Task 1 committeten Workflow; Step-Name `Release erstellen (nur auf main)`, Asset `PromptQuittung.zip`.
-- Produces: bestätigten Release `v1.0.<n>` auf GitHub.
+- Consumes: the workflow committed in Task 1; step name `Create release (main only)`, asset `PromptQuittung.zip`.
+- Produces: a confirmed release `v1.0.<n>` on GitHub.
 
-- [ ] **Step 1: Push auf main**
+- [ ] **Step 1: Push to main**
 
 ```bash
 git push origin main
 ```
 
-Erwartet: Push erfolgreich, Workflow `Build` startet auf GitHub.
+Expected: push succeeds, the `Build` workflow starts on GitHub.
 
-- [ ] **Step 2: Workflow-Lauf beobachten**
+- [ ] **Step 2: Watch the workflow run**
 
-`gh run watch` braucht eine Run-ID, sonst fragt es interaktiv nach:
+`gh run watch` needs a run ID, otherwise it prompts interactively:
 
 ```bash
-sleep 10  # GitHub braucht einen Moment, um den Lauf anzulegen
+sleep 10  # GitHub needs a moment to register the run
 RUN_ID=$(gh run list --branch main --limit 1 --json databaseId -q '.[0].databaseId')
 gh run watch "$RUN_ID" --exit-status
 ```
 
-Erwartet: Lauf endet mit `completed success` (Exit-Code 0). Schlägt der Build fehl, Logs mit `gh run view "$RUN_ID" --log-failed` holen und das Problem beheben, bevor es weitergeht.
+Expected: the run finishes with `completed success` (exit code 0). If the build fails, fetch the logs with `gh run view "$RUN_ID" --log-failed` and fix the problem before continuing.
 
-Hinweis zur Spec-Verifikation „PR-Build erzeugt keinen Release": Das ist durch die Bedingung `github.event_name == 'push'` am Release-Step abgedeckt — PR-Läufe (`event_name == 'pull_request'`) überspringen den Step per Definition. Ein eigener Test-PR ist nicht nötig.
+Note on the spec verification "a PR build creates no release": this is covered by the `github.event_name == 'push'` condition on the release step — PR runs (`event_name == 'pull_request'`) skip the step by definition. A dedicated test PR is not necessary.
 
-- [ ] **Step 3: Release prüfen**
+- [ ] **Step 3: Check the release**
 
 ```bash
 gh release list --limit 3
 gh release view --json tagName,assets,targetCommitish
 ```
 
-Erwartet: Neuester Release hat einen Tag der Form `v1.0.<n>` (n = Run-Nummer), genau ein Asset `PromptQuittung.zip`, und `targetCommitish` ist der gepushte Commit-SHA.
+Expected: the newest release has a tag of the form `v1.0.<n>` (n = run number), exactly one asset `PromptQuittung.zip`, and `targetCommitish` is the pushed commit SHA.
 
-- [ ] **Step 4: Build-Nummer in der App prüfen**
+- [ ] **Step 4: Check the build number in the app**
 
 ```bash
 cd "$(mktemp -d)"
@@ -177,4 +177,4 @@ ditto -x -k PromptQuittung.zip .
 plutil -p PromptQuittung.app/Contents/Info.plist | grep -E "CFBundleVersion|CFBundleShortVersionString"
 ```
 
-Erwartet: `CFBundleShortVersionString => "1.0"` und `CFBundleVersion => "<n>"`, wobei `<n>` die Run-Nummer aus dem Release-Tag ist. Stimmt die Nummer nicht überein, hat der `CURRENT_PROJECT_VERSION`-Override nicht gegriffen — dann Build-Logs prüfen.
+Expected: `CFBundleShortVersionString => "1.0"` and `CFBundleVersion => "<n>"`, where `<n>` is the run number from the release tag. If the number does not match, the `CURRENT_PROJECT_VERSION` override did not take effect — check the build logs in that case.

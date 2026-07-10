@@ -19,7 +19,7 @@ nonisolated struct CursorUsageClient {
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.setValue("application/json", forHTTPHeaderField: "Accept")
         req.setValue(cookieHeader, forHTTPHeaderField: "Cookie")
-        // cursor.com prüft die Origin bei state-changing Requests (CSRF). Ohne diesen Header: 403.
+        // cursor.com checks the Origin on state-changing requests (CSRF). Without this header: 403.
         req.setValue("https://cursor.com", forHTTPHeaderField: "Origin")
         let endMs = Int64(now.timeIntervalSince1970 * 1000)
         let startMs = Int64(now.addingTimeInterval(-lookback).timeIntervalSince1970 * 1000)
@@ -38,7 +38,7 @@ nonisolated struct CursorUsageClient {
         let req = buildRequest(cookieHeader: cookieHeader, now: now())
         let (data, response) = try await session.data(for: req)
         guard let http = response as? HTTPURLResponse else {
-            throw CursorClientError.network("keine HTTP-Antwort")
+            throw CursorClientError.network("no HTTP response")
         }
         if http.statusCode == 401 || http.statusCode == 403 { throw CursorClientError.notLoggedIn }
         guard http.statusCode == 200 else { throw CursorClientError.network("HTTP \(http.statusCode)") }

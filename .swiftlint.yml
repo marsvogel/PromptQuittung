@@ -3,5 +3,5 @@ included:
 
 identifier_name:
   excluded:
-    # Spiegelt die C-Makro-Konvention aus sqlite3.h
+    # Mirrors the C macro convention from sqlite3.h
     - SQLITE_TRANSIENT

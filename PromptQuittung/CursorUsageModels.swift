@@ -1,6 +1,6 @@
 import Foundation
 
-// Decodiert einen Wert, der als JSON-Zahl oder -String kommen kann, zu Int64 (ms).
+// Decodes a value that may arrive as a JSON number or string into Int64 (ms).
 nonisolated struct FlexibleMillis: Codable {
     let value: Int64
     init(from decoder: Decoder) throws {
@@ -23,7 +23,7 @@ nonisolated struct FlexibleMillis: Codable {
     }
 }
 
-// Decodiert Zahl oder numerischen String zu Int.
+// Decodes a number or numeric string into Int.
 nonisolated struct FlexibleInt: Codable {
     let value: Int
     init(from decoder: Decoder) throws {
@@ -44,7 +44,7 @@ nonisolated struct FlexibleInt: Codable {
     }
 }
 
-// Decodiert Zahl, numerischen String oder "-" (== 0) zu Double.
+// Decodes a number, numeric string, or "-" (== 0) into Double.
 nonisolated struct LenientDouble: Codable {
     let value: Double
     init(from decoder: Decoder) throws {
@@ -93,10 +93,10 @@ nonisolated struct UsageEvent: Codable {
         return "\(timestamp.value)|\(model ?? "")|\(kind ?? "")|\(inTok)|\(outTok)"
     }
 
-    // Der volle verrechnete Betrag in USD (chargedCents ist in Cent) — deckt sich mit dem Dashboard.
+    // The full charged amount in USD (chargedCents is in cents) — matches the dashboard.
     var displayCost: Double { (chargedCents?.value ?? 0) / 100 }
 
-    // Gesamte Tokens wie im Dashboard: Input + Output + Cache-Read + Cache-Write.
+    // Total tokens as shown in the dashboard: input + output + cache read + cache write.
     var totalTokens: Int {
         (tokenUsage?.inputTokens?.value ?? 0)
             + (tokenUsage?.outputTokens?.value ?? 0)
@@ -104,7 +104,7 @@ nonisolated struct UsageEvent: Codable {
             + (tokenUsage?.cacheWriteTokens?.value ?? 0)
     }
 
-    // Kompakte, aus dem Augenwinkel lesbare Token-Zahl: 198862 → "198.9k".
+    // Compact token count readable at a glance: 198862 → "198.9k".
     static func compactTokens(_ count: Int) -> String {
         if count >= 1_000_000 { return String(format: "%.1fM", Double(count) / 1_000_000) }
         if count >= 1_000 { return String(format: "%.1fk", Double(count) / 1_000) }
@@ -114,9 +114,9 @@ nonisolated struct UsageEvent: Codable {
     var costString: String { String(format: "$%.2f", displayCost) }
     var tokenString: String { Self.compactTokens(totalTokens) }
 
-    // Notification: Betrag zuerst (Blickfang), dann Modell.
+    // Notification: amount first (the eye-catcher), then the model.
     var notificationTitle: String { "\(costString) · \(model ?? "Cursor")" }
-    var notificationBody: String { "\(tokenString) Tokens" }
+    var notificationBody: String { "\(tokenString) tokens" }
 }
 
 nonisolated struct UsageEventsResponse: Codable {

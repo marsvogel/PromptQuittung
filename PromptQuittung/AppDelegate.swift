@@ -9,7 +9,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         Task { @MainActor in monitor.start() }
     }
 
-    // Notifications auch anzeigen, wenn die App „aktiv" ist.
+    // Also show notifications while the app is "active".
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 willPresent notification: UNNotification,
                                 withCompletionHandler completionHandler:

@@ -1,8 +1,8 @@
 import Foundation
 
 nonisolated enum UsageDiff {
-    // Gibt zu benachrichtigende Events (chronologisch, ältestes zuerst) und das aktualisierte Seen-Set zurück.
-    // Beim ersten Run wird nur geseedet, nichts benachrichtigt.
+    // Returns the events to notify about (chronological, oldest first) and the updated seen set.
+    // On the first run we only seed; nothing gets notified.
     static func detect(events: [UsageEvent], seen: Set<String>, isFirstRun: Bool)
         -> (toNotify: [UsageEvent], updatedSeen: Set<String>) {
         var updated = seen

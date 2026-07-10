@@ -13,7 +13,7 @@ nonisolated enum CursorDatabase {
         NSHomeDirectory() + "/Library/Application Support/Cursor/User/globalStorage/state.vscdb"
     }
 
-    // Liest einen Wert aus dem VS-Code-ItemTable-Key/Value-Store, read-only.
+    // Reads a value from the VS Code ItemTable key/value store, read-only.
     static func value(forKey key: String, dbPath: String = defaultPath) throws -> String {
         guard FileManager.default.fileExists(atPath: dbPath) else { throw CursorDatabaseError.notFound }
 

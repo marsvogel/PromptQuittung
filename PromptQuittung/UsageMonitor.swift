@@ -4,7 +4,7 @@ import os
 
 @MainActor
 final class UsageMonitor: ObservableObject {
-    @Published var statusText: String = "Starte…"
+    @Published var statusText: String = "Starting…"
     @Published var lastPoll: Date?
 
     private var seen: Set<String> = []
@@ -37,9 +37,9 @@ final class UsageMonitor: ObservableObject {
                 log.notice("notify: \(title, privacy: .public) · \(event.notificationBody, privacy: .public)")
             }
             lastPoll = Date()
-            statusText = "OK · \(events.count) Events · \(toNotify.count) neu"
+            statusText = "OK · \(events.count) events · \(toNotify.count) new"
             let seedSuffix = wasFirstRun ? " (seed)" : ""
-            log.notice("poll ok: \(events.count) events, \(toNotify.count) neu\(seedSuffix, privacy: .public)")
+            log.notice("poll ok: \(events.count) events, \(toNotify.count) new\(seedSuffix, privacy: .public)")
         } catch {
             statusText = statusMessage(for: error)
             log.error("poll error: \(self.statusText, privacy: .public)")
@@ -48,10 +48,10 @@ final class UsageMonitor: ObservableObject {
 
     private func statusMessage(for error: Error) -> String {
         switch error {
-        case CursorDatabaseError.notFound: return "Cursor-App nicht gefunden / nicht eingeloggt"
-        case CursorAuthError.expired: return "Token abgelaufen – Cursor neu öffnen"
-        case CursorClientError.notLoggedIn: return "Session ungültig (401/403)"
-        default: return "Fehler: \(error)"
+        case CursorDatabaseError.notFound: return "Cursor app not found / not logged in"
+        case CursorAuthError.expired: return "Token expired – reopen Cursor"
+        case CursorClientError.notLoggedIn: return "Session invalid (401/403)"
+        default: return "Error: \(error)"
         }
     }
 }

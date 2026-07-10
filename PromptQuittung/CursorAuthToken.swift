@@ -13,7 +13,7 @@ nonisolated struct CursorCredential: Equatable {
 }
 
 nonisolated enum CursorAuthToken {
-    // Parst das Cursor-Access-Token-JWT. `now` injizierbar. Verlangt exp > now + 60 s (falls exp vorhanden).
+    // Parses the Cursor access token JWT. `now` is injectable. Requires exp > now + 60 s (if exp is present).
     static func credential(fromAccessToken token: String, now: Date) throws -> CursorCredential {
         let segments = token.split(separator: ".", omittingEmptySubsequences: false)
         guard segments.count >= 2 else { throw CursorAuthError.malformedToken }

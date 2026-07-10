@@ -11,8 +11,8 @@ enum Notifier {
         content.title = event.notificationTitle
         content.body = event.notificationBody
         content.sound = .default
-        // Das linke Icon der Notification ist automatisch das App-Icon aus dem Bundle
-        // (nicht per Code setzbar) — dafür sorgt das AppIcon im Asset-Katalog.
+        // The icon on the left of the notification is automatically the app icon from the bundle
+        // (not settable via code) — the AppIcon in the asset catalog takes care of that.
         let request = UNNotificationRequest(identifier: event.dedupKey, content: content, trigger: nil)
         UNUserNotificationCenter.current().add(request)
     }

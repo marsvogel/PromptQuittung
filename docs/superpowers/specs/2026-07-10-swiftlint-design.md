@@ -1,66 +1,66 @@
-# Design: SwiftLint in der Build-Pipeline
+# Design: SwiftLint in the Build Pipeline
 
-**Datum:** 2026-07-10
-**Status:** Umgesetzt
+**Date:** 2026-07-10
+**Status:** Implemented
 
-## Ziel
+## Goal
 
-Jeder Push und Pull Request wird automatisch auf SwiftLint-Verstöße geprüft. Ein
-Verstoß lässt den Workflow fehlschlagen und verhindert damit auch das Release,
-das bei jedem Push auf `main` erstellt wird.
+Every push and pull request is automatically checked for SwiftLint violations. A
+violation fails the workflow and thereby also prevents the release that is
+created on every push to `main`.
 
-## Entscheidungen
+## Decisions
 
-### Lint als Step im bestehenden Build-Job
+### Lint as a step in the existing build job
 
-Betrachtete Alternativen:
+Alternatives considered:
 
-1. **Step im Build-Job, vor dem Build (gewählt):** Ein Runner, einfachste
-   Struktur. Da das Release im selben Job hängt, verhindert ein Lint-Fehler
-   automatisch das Release — ohne `needs:`-Verkabelung.
-2. **Separater Lint-Job:** Läuft parallel und gibt bei PRs etwas schnelleres
-   Feedback, bräuchte aber `needs: lint` am Build-Job (sonst entstünde ein
-   Release trotz Lint-Fehler) und einen zweiten macOS-Runner-Start. Für ein
-   Projekt dieser Größe kein Gewinn.
+1. **Step in the build job, before the build (chosen):** One runner, simplest
+   structure. Since the release lives in the same job, a lint failure
+   automatically prevents the release — without any `needs:` wiring.
+2. **Separate lint job:** Runs in parallel and gives slightly faster feedback
+   on PRs, but would need `needs: lint` on the build job (otherwise a
+   release would be created despite a lint failure) and a second macOS runner
+   startup. No win for a project of this size.
 
-### Installation auf dem Runner
+### Installation on the runner
 
-`command -v swiftlint >/dev/null || brew install swiftlint` — die
-GitHub-macOS-Images bringen SwiftLint meist mit; falls das `macos-26`-Image es
-nicht (mehr) enthält, greift der Homebrew-Fallback.
+`command -v swiftlint >/dev/null || brew install swiftlint` — the
+GitHub macOS images usually ship with SwiftLint; if the `macos-26` image
+does not (or no longer) include it, the Homebrew fallback kicks in.
 
-### Strikter Modus
+### Strict mode
 
-`swiftlint lint --strict` behandelt Warnings als Fehler. Der Bestand wurde auf
-null Verstöße gebracht, damit bleibt der Standard dauerhaft sauber. Der
-Reporter `github-actions-logging` erzeugt Annotations direkt im PR-Diff.
+`swiftlint lint --strict` treats warnings as errors. The existing codebase was
+brought down to zero violations, so the baseline stays permanently clean. The
+`github-actions-logging` reporter produces annotations directly in the PR diff.
 
-### Konfiguration `.swiftlint.yml`
+### Configuration `.swiftlint.yml`
 
-- `included: [PromptQuittung]` — nur die App-Quellen; `build/` und sonstige
-  generierte Pfade werden nie gescannt.
-- `identifier_name.excluded: [SQLITE_TRANSIENT]` — der Name spiegelt bewusst
-  die C-Makro-Konvention aus `sqlite3.h`; Umbenennung würde die 1:1-Zuordnung
-  zur C-API verschleiern.
-- Sonst gelten die SwiftLint-Standardregeln unverändert.
+- `included: [PromptQuittung]` — only the app sources; `build/` and other
+  generated paths are never scanned.
+- `identifier_name.excluded: [SQLITE_TRANSIENT]` — the name deliberately
+  mirrors the C macro convention from `sqlite3.h`; renaming it would obscure
+  the 1:1 mapping to the C API.
+- Otherwise the SwiftLint default rules apply unchanged.
 
-### Bestandsverstöße: Code angepasst statt Regeln abgeschaltet
+### Pre-existing violations: code adjusted instead of rules disabled
 
-37 Verstöße (23 Errors, 14 Warnings) wurden im Code behoben — rein mechanisch,
-ohne Verhaltensänderung:
+37 violations (23 errors, 14 warnings) were fixed in the code — purely
+mechanically, without behavior changes:
 
-- Kurzbezeichner ausgeschrieben (`c` → `container`, `e` → `event`,
+- Short identifiers spelled out (`c` → `container`, `e` → `event`,
   `db` → `database`, `n` → `count`, `s` → `string`, …).
-- `else`/`else if` auf die Zeile der schließenden Klammer gezogen
-  (`statement_position`), dabei die kompakten Decoder in
-  `CursorUsageModels.swift` mehrzeilig ausformuliert — die
-  Decode-Reihenfolge der Branches bleibt identisch.
-- Überlange Zeilen (> 120 Zeichen) umgebrochen bzw. Log-Interpolationen in
-  lokale Konstanten gezogen (privacy-Annotationen unverändert).
-- Trailing Comma im Request-Body-Literal entfernt.
+- `else`/`else if` moved onto the line of the closing brace
+  (`statement_position`), expanding the compact decoders in
+  `CursorUsageModels.swift` into multi-line form in the process — the
+  decode order of the branches remains identical.
+- Overlong lines (> 120 characters) wrapped, or log interpolations pulled
+  into local constants (privacy annotations unchanged).
+- Trailing comma removed from the request body literal.
 
-## Verifikation
+## Verification
 
-- `swiftlint lint --strict` (portable SwiftLint 0.65.0): 0 Verstöße, Exit 0.
-- `xcodebuild … -configuration Release build` mit den CI-Flags:
+- `swiftlint lint --strict` (portable SwiftLint 0.65.0): 0 violations, exit 0.
+- `xcodebuild … -configuration Release build` with the CI flags:
   **BUILD SUCCEEDED**.

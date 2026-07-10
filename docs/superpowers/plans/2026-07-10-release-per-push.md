@@ -76,12 +76,15 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Build (unsigned)
+      # Updated after implementation: originally CODE_SIGNING_ALLOWED=NO, but fully
+      # unsigned binaries are rejected by the notification daemon (UNErrorDomain
+      # code 1) and can never deliver notifications — ad-hoc signing is required.
+      - name: Build (ad-hoc signed)
         run: |
           xcodebuild -project PromptQuittung.xcodeproj \
             -target PromptQuittung \
             -configuration Release \
-            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="-" \
             CURRENT_PROJECT_VERSION=${{ github.run_number }} \
             build
 

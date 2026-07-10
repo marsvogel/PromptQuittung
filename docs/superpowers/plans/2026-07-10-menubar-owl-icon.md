@@ -71,7 +71,7 @@ Run:
 xcodebuild -project PromptQuittung.xcodeproj \
   -target PromptQuittung \
   -configuration Release \
-  CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO \
+  CODE_SIGN_IDENTITY="-" \
   build 2>&1 | tail -5
 ```
 Expected: `** BUILD SUCCEEDED **` (no actool warning about `MenuBarIcon`).
@@ -128,7 +128,7 @@ Run:
 xcodebuild -project PromptQuittung.xcodeproj \
   -target PromptQuittung \
   -configuration Release \
-  CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO \
+  CODE_SIGN_IDENTITY="-" \
   build 2>&1 | tail -3
 ```
 Expected: `** BUILD SUCCEEDED **`

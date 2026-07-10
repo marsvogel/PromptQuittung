@@ -17,6 +17,9 @@ struct MenuContent: View {
 
     var body: some View {
         Text(monitor.statusText)
+        if let warning = monitor.notificationWarning {
+            Text("⚠️ \(warning)")
+        }
         if let last = monitor.lastPoll {
             Text("Last poll: \(last.formatted(date: .omitted, time: .standard))")
         }

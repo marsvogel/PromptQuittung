@@ -6,6 +6,7 @@ import os
 final class UsageMonitor: ObservableObject {
     @Published var statusText: String = "Starting…"
     @Published var lastPoll: Date?
+    @Published var notificationWarning: String?
 
     private var seen: Set<String> = []
     private var isFirstRun = true
@@ -43,6 +44,10 @@ final class UsageMonitor: ObservableObject {
         } catch {
             statusText = statusMessage(for: error)
             log.error("poll error: \(self.statusText, privacy: .public)")
+        }
+        notificationWarning = await Notifier.authorizationProblem()
+        if let warning = notificationWarning {
+            log.error("notification warning: \(warning, privacy: .public)")
         }
     }
 

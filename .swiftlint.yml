@@ -1,5 +1,6 @@
 included:
   - PromptQuittung
+  - PromptQuittungTests
 
 identifier_name:
   excluded:

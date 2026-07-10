@@ -5,7 +5,7 @@ struct PromptQuittungApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
-        MenuBarExtra("PromptQuittung", systemImage: "bell.badge") {
+        MenuBarExtra("PromptQuittung", image: "MenuBarIcon") {
             MenuContent(monitor: appDelegate.monitor)
         }
         .menuBarExtraStyle(.menu)

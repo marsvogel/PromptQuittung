@@ -1,0 +1,40 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build (unsigniert)
+        run: |
+          xcodebuild -project PromptQuittung.xcodeproj \
+            -target PromptQuittung \
+            -configuration Release \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: App als ZIP verpacken
+        run: ditto -c -k --keepParent build/Release/PromptQuittung.app PromptQuittung.zip
+
+      - name: Artefakt hochladen
+        uses: actions/upload-artifact@v5
+        with:
+          name: PromptQuittung
+          path: PromptQuittung.zip
+
+      - name: Release erstellen (nur bei Tag)
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" PromptQuittung.zip --title "$GITHUB_REF_NAME" --generate-notes

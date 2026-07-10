@@ -15,6 +15,11 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: SwiftLint
+        run: |
+          command -v swiftlint >/dev/null || brew install swiftlint
+          swiftlint lint --strict --reporter github-actions-logging
+
       - name: Build (unsigniert)
         run: |
           xcodebuild -project PromptQuittung.xcodeproj \

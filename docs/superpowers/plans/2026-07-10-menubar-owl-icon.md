@@ -27,7 +27,7 @@
 - Consumes: nichts (erster Task).
 - Produces: Asset-Katalog-Eintrag mit dem Namen `MenuBarIcon`, den Task 2 per `MenuBarExtra("PromptQuittung", image: "MenuBarIcon")` referenziert.
 
-- [ ] **Step 1: Imageset-Verzeichnis und SVG anlegen**
+- [x] **Step 1: Imageset-Verzeichnis und SVG anlegen**
 
 Datei `PromptQuittung/Assets.xcassets/MenuBarIcon.imageset/MenuBarIcon.svg` mit exakt diesem Inhalt (Eulen-Silhouette, Variante A aus der Spec; Füllfarbe ist bei Template-Rendering egal, zählt nur Alpha):
 
@@ -41,7 +41,7 @@ Datei `PromptQuittung/Assets.xcassets/MenuBarIcon.imageset/MenuBarIcon.svg` mit 
 </svg>
 ```
 
-- [ ] **Step 2: Contents.json anlegen**
+- [x] **Step 2: Contents.json anlegen**
 
 Datei `PromptQuittung/Assets.xcassets/MenuBarIcon.imageset/Contents.json` mit exakt diesem Inhalt:
 
@@ -64,7 +64,7 @@ Datei `PromptQuittung/Assets.xcassets/MenuBarIcon.imageset/Contents.json` mit ex
 }
 ```
 
-- [ ] **Step 3: Build ausführen — actool muss das SVG akzeptieren**
+- [x] **Step 3: Build ausführen — actool muss das SVG akzeptieren**
 
 Run:
 ```bash
@@ -76,7 +76,7 @@ xcodebuild -project PromptQuittung.xcodeproj \
 ```
 Expected: `** BUILD SUCCEEDED **` (keine actool-Warnung zu `MenuBarIcon`).
 
-- [ ] **Step 4: Asset im kompilierten Katalog nachweisen**
+- [x] **Step 4: Asset im kompilierten Katalog nachweisen**
 
 Run:
 ```bash
@@ -84,7 +84,7 @@ assetutil --info build/Release/PromptQuittung.app/Contents/Resources/Assets.car 
 ```
 Expected: mindestens ein Eintrag mit `"Name" : "MenuBarIcon"` (Vector-Rendition).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add PromptQuittung/Assets.xcassets/MenuBarIcon.imageset
@@ -102,7 +102,7 @@ git commit -m "feat: Eulen-Silhouette als Template-Asset MenuBarIcon"
 - Consumes: Asset `MenuBarIcon` aus Task 1.
 - Produces: sichtbares Verhalten — Eule statt Glocke in der Menüleiste; keine API, auf der weitere Tasks aufbauen.
 
-- [ ] **Step 1: Initialisierer umstellen**
+- [x] **Step 1: Initialisierer umstellen**
 
 In `PromptQuittung/PromptQuittungApp.swift`, Zeile 8, alt:
 
@@ -116,12 +116,12 @@ neu:
         MenuBarExtra("PromptQuittung", image: "MenuBarIcon") {
 ```
 
-- [ ] **Step 2: SwiftLint prüfen**
+- [x] **Step 2: SwiftLint prüfen**
 
 Run: `swiftlint lint --strict 2>/dev/null | tail -3` (falls `swiftlint` lokal fehlt: Schritt überspringen, die CI prüft ohnehin).
 Expected: `Found 0 violations` bzw. Exit 0.
 
-- [ ] **Step 3: Build ausführen**
+- [x] **Step 3: Build ausführen**
 
 Run:
 ```bash
@@ -133,7 +133,7 @@ xcodebuild -project PromptQuittung.xcodeproj \
 ```
 Expected: `** BUILD SUCCEEDED **`
 
-- [ ] **Step 4: App starten und Menüleiste visuell prüfen**
+- [x] **Step 4: App starten und Menüleiste visuell prüfen**
 
 Run:
 ```bash
@@ -148,7 +148,7 @@ Expected im Screenshot: Die Eulen-Silhouette erscheint rechts in der Menüleiste
 pkill -x PromptQuittung
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add PromptQuittung/PromptQuittungApp.swift

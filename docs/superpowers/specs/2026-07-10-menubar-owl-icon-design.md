@@ -1,7 +1,7 @@
 # Design: Eulen-Silhouette als MenuBar-Icon
 
 **Datum:** 2026-07-10
-**Status:** Entwurf
+**Status:** Umgesetzt
 
 ## Ziel
 

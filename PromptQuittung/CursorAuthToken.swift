@@ -30,9 +30,9 @@ nonisolated enum CursorAuthToken {
         return CursorCredential(userID: userID, accessToken: token)
     }
 
-    static func base64urlDecode(_ s: String) -> Data? {
-        var str = s.replacingOccurrences(of: "-", with: "+").replacingOccurrences(of: "_", with: "/")
-        while str.count % 4 != 0 { str += "=" }
-        return Data(base64Encoded: str)
+    static func base64urlDecode(_ string: String) -> Data? {
+        var base64 = string.replacingOccurrences(of: "-", with: "+").replacingOccurrences(of: "_", with: "/")
+        while base64.count % 4 != 0 { base64 += "=" }
+        return Data(base64Encoded: base64)
     }
 }

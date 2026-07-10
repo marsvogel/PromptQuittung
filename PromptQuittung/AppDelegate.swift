@@ -12,7 +12,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     // Notifications auch anzeigen, wenn die App „aktiv" ist.
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 willPresent notification: UNNotification,
-                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+                                withCompletionHandler completionHandler:
+                                    @escaping (UNNotificationPresentationOptions) -> Void) {
         completionHandler([.banner, .sound])
     }
 }

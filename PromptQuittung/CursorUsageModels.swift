@@ -4,15 +4,22 @@ import Foundation
 nonisolated struct FlexibleMillis: Codable {
     let value: Int64
     init(from decoder: Decoder) throws {
-        let c = try decoder.singleValueContainer()
-        if let i = try? c.decode(Int64.self) { value = i }
-        else if let d = try? c.decode(Double.self) { value = Int64(d) }
-        else if let s = try? c.decode(String.self), let i = Int64(s) { value = i }
-        else if let s = try? c.decode(String.self), let d = Double(s) { value = Int64(d) }
-        else { value = 0 }
+        let container = try decoder.singleValueContainer()
+        if let int = try? container.decode(Int64.self) {
+            value = int
+        } else if let double = try? container.decode(Double.self) {
+            value = Int64(double)
+        } else if let string = try? container.decode(String.self), let int = Int64(string) {
+            value = int
+        } else if let string = try? container.decode(String.self), let double = Double(string) {
+            value = Int64(double)
+        } else {
+            value = 0
+        }
     }
     func encode(to encoder: Encoder) throws {
-        var c = encoder.singleValueContainer(); try c.encode(value)
+        var container = encoder.singleValueContainer()
+        try container.encode(value)
     }
 }
 
@@ -20,14 +27,20 @@ nonisolated struct FlexibleMillis: Codable {
 nonisolated struct FlexibleInt: Codable {
     let value: Int
     init(from decoder: Decoder) throws {
-        let c = try decoder.singleValueContainer()
-        if let i = try? c.decode(Int.self) { value = i }
-        else if let d = try? c.decode(Double.self) { value = Int(d) }
-        else if let s = try? c.decode(String.self), let i = Int(s) { value = i }
-        else { value = 0 }
+        let container = try decoder.singleValueContainer()
+        if let int = try? container.decode(Int.self) {
+            value = int
+        } else if let double = try? container.decode(Double.self) {
+            value = Int(double)
+        } else if let string = try? container.decode(String.self), let int = Int(string) {
+            value = int
+        } else {
+            value = 0
+        }
     }
     func encode(to encoder: Encoder) throws {
-        var c = encoder.singleValueContainer(); try c.encode(value)
+        var container = encoder.singleValueContainer()
+        try container.encode(value)
     }
 }
 
@@ -35,13 +48,18 @@ nonisolated struct FlexibleInt: Codable {
 nonisolated struct LenientDouble: Codable {
     let value: Double
     init(from decoder: Decoder) throws {
-        let c = try decoder.singleValueContainer()
-        if let d = try? c.decode(Double.self) { value = d }
-        else if let s = try? c.decode(String.self) { value = s == "-" ? 0 : (Double(s) ?? 0) }
-        else { value = 0 }
+        let container = try decoder.singleValueContainer()
+        if let double = try? container.decode(Double.self) {
+            value = double
+        } else if let string = try? container.decode(String.self) {
+            value = string == "-" ? 0 : (Double(string) ?? 0)
+        } else {
+            value = 0
+        }
     }
     func encode(to encoder: Encoder) throws {
-        var c = encoder.singleValueContainer(); try c.encode(value)
+        var container = encoder.singleValueContainer()
+        try container.encode(value)
     }
 }
 
@@ -87,10 +105,10 @@ nonisolated struct UsageEvent: Codable {
     }
 
     // Kompakte, aus dem Augenwinkel lesbare Token-Zahl: 198862 → "198.9k".
-    static func compactTokens(_ n: Int) -> String {
-        if n >= 1_000_000 { return String(format: "%.1fM", Double(n) / 1_000_000) }
-        if n >= 1_000 { return String(format: "%.1fk", Double(n) / 1_000) }
-        return "\(n)"
+    static func compactTokens(_ count: Int) -> String {
+        if count >= 1_000_000 { return String(format: "%.1fM", Double(count) / 1_000_000) }
+        if count >= 1_000 { return String(format: "%.1fk", Double(count) / 1_000) }
+        return "\(count)"
     }
 
     var costString: String { String(format: "$%.2f", displayCost) }

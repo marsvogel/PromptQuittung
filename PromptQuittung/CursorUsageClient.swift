@@ -28,7 +28,7 @@ nonisolated struct CursorUsageClient {
             "startDate": String(startMs),
             "endDate": String(endMs),
             "page": 1,
-            "pageSize": pageSize,
+            "pageSize": pageSize
         ]
         req.httpBody = try? JSONSerialization.data(withJSONObject: body)
         return req

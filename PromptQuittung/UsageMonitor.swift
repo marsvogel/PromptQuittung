@@ -33,11 +33,13 @@ final class UsageMonitor: ObservableObject {
             isFirstRun = false
             for event in toNotify {
                 Notifier.notify(event: event)
-                log.notice("notify: \(event.notificationTitle, privacy: .public) · \(event.notificationBody, privacy: .public)")
+                let title = event.notificationTitle
+                log.notice("notify: \(title, privacy: .public) · \(event.notificationBody, privacy: .public)")
             }
             lastPoll = Date()
             statusText = "OK · \(events.count) Events · \(toNotify.count) neu"
-            log.notice("poll ok: \(events.count) events, \(toNotify.count) neu\(wasFirstRun ? " (seed)" : "", privacy: .public)")
+            let seedSuffix = wasFirstRun ? " (seed)" : ""
+            log.notice("poll ok: \(events.count) events, \(toNotify.count) neu\(seedSuffix, privacy: .public)")
         } catch {
             statusText = statusMessage(for: error)
             log.error("poll error: \(self.statusText, privacy: .public)")

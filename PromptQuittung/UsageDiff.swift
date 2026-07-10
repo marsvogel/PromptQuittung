@@ -6,7 +6,7 @@ nonisolated enum UsageDiff {
     static func detect(events: [UsageEvent], seen: Set<String>, isFirstRun: Bool)
         -> (toNotify: [UsageEvent], updatedSeen: Set<String>) {
         var updated = seen
-        for e in events { updated.insert(e.dedupKey) }
+        for event in events { updated.insert(event.dedupKey) }
         if isFirstRun { return ([], updated) }
         let fresh = events.filter { !seen.contains($0.dedupKey) }
         let ordered = fresh.sorted { $0.timestamp.value < $1.timestamp.value }

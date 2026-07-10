@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="PromptQuittung/AppIcon.icon/Assets/icon.png" alt="PromptQuittung app icon" width="128">
+</p>
+
 # PromptQuittung
 
 [![Build](https://github.com/marsvogel/PromptQuittung/actions/workflows/build.yml/badge.svg)](https://github.com/marsvogel/PromptQuittung/actions/workflows/build.yml)

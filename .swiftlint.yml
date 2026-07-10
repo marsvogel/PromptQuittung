@@ -1,0 +1,8 @@
+included:
+  - PromptQuittung
+  - PromptQuittungTests
+
+identifier_name:
+  excluded:
+    # Mirrors the C macro convention from sqlite3.h
+    - SQLITE_TRANSIENT

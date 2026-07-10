@@ -1,0 +1,43 @@
+name: Bug report
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the problem, and what you expected instead.
+    validations:
+      required: true
+  - type: input
+    id: macos-version
+    attributes:
+      label: macOS version
+      placeholder: e.g. macOS 15.5
+    validations:
+      required: true
+  - type: input
+    id: cursor-version
+    attributes:
+      label: Cursor version
+      description: Cursor → About Cursor
+      placeholder: e.g. 1.2.1
+    validations:
+      required: true
+  - type: input
+    id: app-version
+    attributes:
+      label: PromptQuittung version
+      description: The release tag you downloaded, e.g. v1.0.6
+    validations:
+      required: true
+  - type: textarea
+    id: notifications
+    attributes:
+      label: Notification permission state
+      description: System Settings → Notifications → PromptQuittung — allowed or denied?
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Console output, screenshots, or other context. Please redact personal data.

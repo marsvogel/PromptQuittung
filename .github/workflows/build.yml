@@ -13,12 +13,23 @@ jobs:
   build:
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
 
+      # Pinned to a fixed version so new SwiftLint rules can't suddenly break CI (--strict).
       - name: SwiftLint
+        env:
+          SWIFTLINT_VERSION: 0.65.0
         run: |
-          command -v swiftlint >/dev/null || brew install swiftlint
-          swiftlint lint --strict --reporter github-actions-logging
+          curl -fsSL -o swiftlint.zip \
+            "https://github.com/realm/SwiftLint/releases/download/${SWIFTLINT_VERSION}/portable_swiftlint.zip"
+          unzip -o -q swiftlint.zip -d swiftlint-bin
+          ./swiftlint-bin/swiftlint lint --strict --reporter github-actions-logging
+
+      - name: Test
+        run: |
+          xcodebuild test -project PromptQuittung.xcodeproj \
+            -scheme PromptQuittung \
+            CODE_SIGN_IDENTITY="-"
 
       # Ad-hoc signing ("-") instead of disabling signing entirely: a fully unsigned
       # binary is rejected by the notification daemon (UNErrorDomain code 1), so the
@@ -36,7 +47,7 @@ jobs:
         run: ditto -c -k --keepParent build/Release/PromptQuittung.app PromptQuittung.zip
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         with:
           name: PromptQuittung
           path: PromptQuittung.zip

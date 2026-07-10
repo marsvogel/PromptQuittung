@@ -20,12 +20,15 @@ jobs:
           command -v swiftlint >/dev/null || brew install swiftlint
           swiftlint lint --strict --reporter github-actions-logging
 
-      - name: Build (unsigned)
+      # Ad-hoc signing ("-") instead of disabling signing entirely: a fully unsigned
+      # binary is rejected by the notification daemon (UNErrorDomain code 1), so the
+      # app builds and launches but can never deliver a single notification.
+      - name: Build (ad-hoc signed)
         run: |
           xcodebuild -project PromptQuittung.xcodeproj \
             -target PromptQuittung \
             -configuration Release \
-            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="-" \
             CURRENT_PROJECT_VERSION=${{ github.run_number }} \
             build
 

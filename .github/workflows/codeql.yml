@@ -1,0 +1,73 @@
+# CodeQL advanced setup, replacing GitHub's default setup.
+#
+# Default setup cannot analyze this project's Swift code: its autobuilder parses
+# project.pbxproj for Swift file references, but this project uses Xcode 16
+# file-system-synchronized groups (PBXFileSystemSynchronizedRootGroup), where
+# source files are no longer listed individually. The autobuilder therefore sees
+# no Swift targets and fails ("no-swift-target"). This workflow builds the app
+# explicitly instead (build-mode: manual).
+name: CodeQL
+
+on:
+  push:
+    branches: [main]
+  # Restricted to PRs against main: only main receives push (baseline) analyses,
+  # so results for other base branches could not be compared to anything.
+  # Markdown-only PRs have no analyzable surface and skip the expensive macOS job.
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - "**/*.md"
+  schedule:
+    - cron: "27 6 * * 1"
+  workflow_dispatch:
+
+# Superseded runs (e.g. rapid successive pushes to a PR) analyze obsolete
+# commits; cancel them instead of letting them occupy macOS runner slots.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: actions
+            build-mode: none
+            runner: ubuntu-latest
+          - language: swift
+            build-mode: manual
+            runner: macos-26
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@99df26d4f13ea111d4ec1a7dddef6063f76b97e9 # v4.37.0
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+
+      # Ad-hoc signing for the same reason as in build.yml; CodeQL only needs the
+      # compile to succeed so the extractor can trace it. build-for-testing
+      # compiles the app and the test target, so test code is analyzed too. The
+      # scheme's Debug configuration skips optimization (extraction does not need
+      # it) and builds a single architecture (ONLY_ACTIVE_ARCH=YES) — a universal
+      # build would compile (and extract) every file twice.
+      - name: Build
+        if: matrix.language == 'swift'
+        run: |
+          xcodebuild build-for-testing -project PromptQuittung.xcodeproj \
+            -scheme PromptQuittung \
+            CODE_SIGN_IDENTITY="-"
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@99df26d4f13ea111d4ec1a7dddef6063f76b97e9 # v4.37.0
+        with:
+          category: "/language:${{ matrix.language }}"

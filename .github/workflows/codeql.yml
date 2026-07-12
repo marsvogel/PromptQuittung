@@ -11,12 +11,22 @@ name: CodeQL
 on:
   push:
     branches: [main]
+  # Restricted to PRs against main: only main receives push (baseline) analyses,
+  # so results for other base branches could not be compared to anything.
+  # Markdown-only PRs have no analyzable surface and skip the expensive macOS job.
   pull_request:
+    branches: [main]
+    paths-ignore:
+      - "**/*.md"
   schedule:
     - cron: "27 6 * * 1"
+  workflow_dispatch:
 
-permissions:
-  contents: read
+# Superseded runs (e.g. rapid successive pushes to a PR) analyze obsolete
+# commits; cancel them instead of letting them occupy macOS runner slots.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   analyze:
@@ -45,18 +55,17 @@ jobs:
           build-mode: ${{ matrix.build-mode }}
 
       # Ad-hoc signing for the same reason as in build.yml; CodeQL only needs the
-      # compile to succeed so the extractor can trace it. Single architecture per
-      # GitHub's Swift analysis guidance — a universal build would compile (and
-      # extract) every file twice.
+      # compile to succeed so the extractor can trace it. build-for-testing
+      # compiles the app and the test target, so test code is analyzed too. The
+      # scheme's Debug configuration skips optimization (extraction does not need
+      # it) and builds a single architecture (ONLY_ACTIVE_ARCH=YES) — a universal
+      # build would compile (and extract) every file twice.
       - name: Build
         if: matrix.language == 'swift'
         run: |
-          xcodebuild -project PromptQuittung.xcodeproj \
-            -target PromptQuittung \
-            -configuration Release \
-            CODE_SIGN_IDENTITY="-" \
-            ONLY_ACTIVE_ARCH=YES \
-            build
+          xcodebuild build-for-testing -project PromptQuittung.xcodeproj \
+            -scheme PromptQuittung \
+            CODE_SIGN_IDENTITY="-"
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@99df26d4f13ea111d4ec1a7dddef6063f76b97e9 # v4.37.0

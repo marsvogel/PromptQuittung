@@ -63,6 +63,14 @@ nonisolated struct LenientDouble: Codable {
     }
 }
 
+nonisolated enum Money {
+    // Cursor bills in USD; the dashboard shows two decimals, so we do too.
+    static func usd(_ amount: Double) -> String { String(format: "$%.2f", amount) }
+
+    // Whole dollars, for the menu bar where every character competes for width.
+    static func usdRounded(_ amount: Double) -> String { String(format: "$%.0f", amount) }
+}
+
 nonisolated struct TokenUsage: Codable {
     let totalCents: LenientDouble?
     let inputTokens: FlexibleInt?
@@ -86,6 +94,9 @@ nonisolated struct UsageEvent: Codable {
     var kindShort: String {
         (kind ?? "").replacingOccurrences(of: "USAGE_EVENT_KIND_", with: "")
     }
+
+    // The API reports the timestamp in milliseconds since the epoch.
+    var date: Date { Date(timeIntervalSince1970: Double(timestamp.value) / 1000) }
 
     var dedupKey: String {
         let inTok = tokenUsage?.inputTokens?.value ?? 0
@@ -111,7 +122,7 @@ nonisolated struct UsageEvent: Codable {
         return "\(count)"
     }
 
-    var costString: String { String(format: "$%.2f", displayCost) }
+    var costString: String { Money.usd(displayCost) }
     var tokenString: String { Self.compactTokens(totalTokens) }
 
     // Notification: amount first (the eye-catcher), then the model.

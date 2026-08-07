@@ -10,7 +10,7 @@
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/marsvogel/PromptQuittung)
 [![Built with Claude Code](https://img.shields.io/badge/Built_with-Claude_Code-D97757?logo=claude&logoColor=fff)](./AI_DISCLOSURE.md)
 
-A macOS menu bar app that sends a notification whenever a new usage event appears in your [Cursor](https://cursor.com) usage overview — showing price, model, and token count, like a receipt for every AI prompt.
+A macOS menu bar app that sends a notification whenever a new usage event appears in your [Cursor](https://cursor.com) usage overview — showing price, model, and token count, like a receipt for every AI prompt. Next to the menu bar icon it keeps a running total of what you have spent this calendar month.
 
 To authenticate, it reads the session of the locally installed Cursor IDE. No setup, no password, no API key.
 
@@ -39,6 +39,8 @@ If you prefer not to run an unsigned binary, you can [build it from source](#bui
 After launch, an owl icon appears in the menu bar — there is no Dock icon and no window. On first launch, macOS asks for permission to show notifications; without it the app cannot do its job (the menu bar menu will point this out and link to System Settings).
 
 The app then polls your Cursor usage events and posts a notification for every new one, e.g. **“$0.42 · claude-4.5-sonnet”** with the total token count as the message body. On the very first run, existing events are only recorded, not notified — you only hear about new activity.
+
+Next to the owl stands the month-to-date total in whole dollars — everything charged since the 1st of the current calendar month; the menu repeats it to the cent as *This month*. It appears as soon as the first total has been fetched, updates whenever a new event shows up, and resets on its own when the month rolls over.
 
 ## How it works & privacy
 

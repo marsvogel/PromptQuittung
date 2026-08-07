@@ -44,6 +44,11 @@ final class CursorUsageModelsTests: XCTestCase {
         XCTAssertEqual(event.costString, "$2.50")
     }
 
+    func testDateConvertsMillisecondsToADate() throws {
+        let event = try decodeEvent(#"{"timestamp": 1700000000000}"#)
+        XCTAssertEqual(event.date, Date(timeIntervalSince1970: 1_700_000_000))
+    }
+
     func testKindShortStripsPrefix() throws {
         let event = try decodeEvent(#"{"timestamp": 1, "kind": "USAGE_EVENT_KIND_CHAT"}"#)
         XCTAssertEqual(event.kindShort, "CHAT")
@@ -52,6 +57,21 @@ final class CursorUsageModelsTests: XCTestCase {
     func testNotificationTitleFallsBackToCursorWithoutModel() throws {
         let event = try decodeEvent(#"{"timestamp": 1}"#)
         XCTAssertEqual(event.notificationTitle, "$0.00 · Cursor")
+    }
+
+    // MARK: Money
+
+    func testFormattedAsUSD() {
+        XCTAssertEqual(Money.usd(0), "$0.00")
+        XCTAssertEqual(Money.usd(7.891), "$7.89")
+        XCTAssertEqual(Money.usd(1234.5), "$1234.50")
+    }
+
+    func testRoundedFormatDropsCentsForTheMenuBar() {
+        XCTAssertEqual(Money.usdRounded(0), "$0")
+        XCTAssertEqual(Money.usdRounded(0.42), "$0")
+        XCTAssertEqual(Money.usdRounded(7.2), "$7")
+        XCTAssertEqual(Money.usdRounded(7.891), "$8")
     }
 
     // MARK: compactTokens

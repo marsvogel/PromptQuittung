@@ -49,12 +49,12 @@ final class UsageMonitorTests: XCTestCase {
         let monitor = UsageMonitor()
         monitor.monthToDateCost = 431
         monitor.lastMonthToDateRefresh = try lastMonth()
-        monitor.credential = { throw CursorDatabaseError.queryFailed }
+        monitor.credential = { throw CursorDatabaseError.queryFailed("unable to open database file") }
 
         await monitor.poll()
 
         XCTAssertNil(monitor.monthToDateCost)
-        XCTAssertEqual(monitor.statusText, "Error: queryFailed")
+        XCTAssertTrue(monitor.statusText.contains("unable to open database file"), monitor.statusText)
     }
 
     func testAFailingPollWithinTheMonthKeepsTheTotal() async {
@@ -62,7 +62,7 @@ final class UsageMonitorTests: XCTestCase {
         let monitor = UsageMonitor()
         monitor.monthToDateCost = 431
         monitor.lastMonthToDateRefresh = Date()
-        monitor.credential = { throw CursorDatabaseError.queryFailed }
+        monitor.credential = { throw CursorDatabaseError.queryFailed("unable to open database file") }
 
         await monitor.poll()
 

@@ -22,8 +22,11 @@ final class UsageMonitor: ObservableObject {
     private var isFirstRun = true
     private var isPolling = false
     private var timer: Timer?
-    private var lastMonthToDateRefresh: Date?
+    var lastMonthToDateRefresh: Date?
     private let client = CursorUsageClient()
+    // Injectable so a test can drive the path where the poll fails before it ever gets to the
+    // month total. In production it reads the session of the locally installed Cursor.
+    var credential: () throws -> CursorCredential = { try CursorAuth.currentCredential() }
     private let interval: TimeInterval = 60
     private let log = Logger(subsystem: "io.github.marsvogel.PromptQuittung", category: "monitor")
 
@@ -44,8 +47,13 @@ final class UsageMonitor: ObservableObject {
         guard !isPolling else { return }
         isPolling = true
         defer { isPolling = false }
+        // Ahead of the fetch, because the fetch is what fails: dropping a past month's total only
+        // inside `refreshMonthToDate` never happens while polls keep failing (expired token,
+        // Cursor closed, no network), leaving last month's amount frozen under "This month" for
+        // the whole of the new one.
+        dropMonthToDateIfFromAPastMonth(now: Date())
         do {
-            let cred = try CursorAuth.currentCredential()
+            let cred = try credential()
             let events = try await client.fetchEvents(cookieHeader: cred.cookieHeader)
             let wasFirstRun = isFirstRun
             let (toNotify, updated) = UsageDiff.detect(events: events, seen: seen, isFirstRun: isFirstRun)
@@ -79,6 +87,8 @@ final class UsageMonitor: ObservableObject {
     // a blank menu bar — and reports itself through `monthToDateWarning`.
     private func refreshMonthToDate(cookieHeader: String, newEvents: [UsageEvent]) async {
         let now = Date()
+        // Again here: the rollover can fall between the check opening the poll and this fetch.
+        dropMonthToDateIfFromAPastMonth(now: now)
         guard MonthToDate.needsRefresh(lastRefresh: lastMonthToDateRefresh, now: now) else {
             // Guarded because assigning an unchanged total still republishes it, redrawing the
             // menu bar label once a minute for nothing. Adding no events is the identity.
@@ -86,11 +96,6 @@ final class UsageMonitor: ObservableObject {
                 monthToDateCost = MonthToDate.adding(newEvents, to: monthToDateCost, now: now)
             }
             return
-        }
-        // Last month's total is wrong, not merely stale, so it goes before the refetch rather than
-        // after it — otherwise a refetch that fails would leave it labelled "This month".
-        if MonthToDate.belongsToAPastMonth(lastRefresh: lastMonthToDateRefresh, now: now) {
-            monthToDateCost = nil
         }
         do {
             let events = try await client.fetchEvents(cookieHeader: cookieHeader,
@@ -104,6 +109,17 @@ final class UsageMonitor: ObservableObject {
             monthToDateWarning = "Month total unavailable: \(statusMessage(for: error))"
             log.error("month-to-date error: \(self.statusMessage(for: error), privacy: .public)")
         }
+    }
+
+    // A total fetched in a previous month is wrong rather than merely outdated: left in place it
+    // reports last month's spending as this month's. So it goes the moment the month rolls over,
+    // whether or not a fetch can succeed right now — an empty menu bar is honest, a stale one is
+    // not. The stamp goes with it, so the total cannot be revived by `adding(_:to:)` and the next
+    // successful poll refetches the new month.
+    func dropMonthToDateIfFromAPastMonth(now: Date) {
+        guard MonthToDate.belongsToAPastMonth(lastRefresh: lastMonthToDateRefresh, now: now) else { return }
+        monthToDateCost = nil
+        lastMonthToDateRefresh = nil
     }
 
     private func statusMessage(for error: Error) -> String {

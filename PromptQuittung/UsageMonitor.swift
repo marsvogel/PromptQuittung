@@ -127,6 +127,11 @@ final class UsageMonitor: ObservableObject {
         case CursorDatabaseError.notFound: return "Cursor app not found / not logged in"
         case CursorAuthError.expired: return "Token expired – reopen Cursor"
         case CursorClientError.notLoggedIn: return "Session invalid (401/403)"
+        case CursorSafeStorageError.keychain(errSecUserCanceled), CursorSafeStorageError.keychain(errSecAuthFailed):
+            return "Keychain access denied – allow “Cursor Safe Storage”"
+        case CursorSafeStorageError.keychain(let status): return "Cursor key not readable from keychain (\(status))"
+        case CursorSafeStorageError.malformedValue, CursorSafeStorageError.decryptionFailed:
+            return "Cannot decrypt Cursor session"
         default: return "Error: \(error)"
         }
     }

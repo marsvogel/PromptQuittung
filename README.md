@@ -38,6 +38,8 @@ If you prefer not to run an unsigned binary, you can [build it from source](#bui
 
 After launch, an owl icon appears in the menu bar — there is no Dock icon and no window. On first launch, macOS asks for permission to show notifications; without it the app cannot do its job (the menu bar menu will point this out and link to System Settings).
 
+With Cursor 3.27 or newer, macOS also asks whether PromptQuittung may use the confidential information stored in *Cursor Safe Storage* in your keychain. Choose *Always Allow*: it is the key Cursor encrypts its session with, and without it the app cannot sign in. After an app update macOS may ask once more.
+
 The app then polls your Cursor usage events and posts a notification for every new one, e.g. **“$0.42 · claude-4.5-sonnet”** with the total token count as the message body. On the very first run, existing events are only recorded, not notified — you only hear about new activity.
 
 Next to the owl stands the month-to-date total in whole dollars — everything charged since the 1st of the current calendar month; the menu repeats it to the cent as *This month*. It appears as soon as the first total has been fetched, updates whenever a new event shows up, and resets on its own when the month rolls over.
@@ -45,6 +47,7 @@ Next to the owl stands the month-to-date total in whole dollars — everything c
 ## How it works & privacy
 
 - The app reads the Cursor session token **read-only** from Cursor's local `state.vscdb` (SQLite) — the same session your IDE is already logged in with. It never modifies Cursor's data.
+- Cursor 3.27 and newer store that token encrypted. The app then reads Cursor's key from the *Cursor Safe Storage* keychain item and decrypts the token in memory, exactly as Cursor itself does. The key is kept in memory only while the app runs.
 - The token is sent **exclusively to `cursor.com`** to fetch your own usage events. No other server is contacted, ever.
 - The token is never logged and never written anywhere else.
 - There is no analytics, no tracking, no third-party code — the app has zero external dependencies, and the whole source is about 400 lines of Swift you can read in minutes.
